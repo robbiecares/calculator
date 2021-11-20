@@ -1,0 +1,7 @@
+*fix "divide by zero" bug so that the message doesn't cause NaN to appear
+*fix long input/output display length issue
+*add a button to toggle positive/negative number input
+*add keyboard support
+*reduce length of output for repeating decimals
+*add functionality for clear so that it remove the last part of the expression when possible
+*add 'clickable button' css styling to all buttons
