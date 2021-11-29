@@ -5,12 +5,29 @@ const exprDisplay = document.querySelector('#calc-output-expr')
 const evalDisplay = document.querySelector('#calc-output-eval')
 const clearBtn = document.querySelector('#calc-clear')
 const backBtn = document.querySelector('#calc-back-btn')
+const oneKey = document.querySelector('#one-key')
 
 // event listeners
-operands.forEach(operand => operand.addEventListener('click', validateOperandClick))
-eqlbtn.addEventListener('click', validateEqlClick)
-backBtn.addEventListener('click', validateOperandClick)
-clearBtn.addEventListener('click', validateClearClick)
+operands.forEach(operand => operand.addEventListener('click', main))
+
+window.addEventListener('keydown', main)
+
+eqlbtn.addEventListener('click', operate)
+backBtn.addEventListener('click', main)
+clearBtn.addEventListener('click', clearDisplay)
+
+// experminentation for clearall vs clear last functionality
+
+// let clearBtnClicked = false
+
+// clearBtn.addEventListener('mousedown', () => {
+//     clearBtnClicked = false
+//     clearDisplay()
+// })
+
+// clearBtn.addEventListener('click', () => {
+//     clearBtnClicked = true
+// })
 
 // operator objects & btns
 function operatorCreator(expression, symbol, cssId) {
@@ -21,135 +38,167 @@ function operatorCreator(expression, symbol, cssId) {
     btn: document.querySelector(cssId)
     }
 }
+
 const add = operatorCreator(...[function(x, y) {return x + y}, '+', '#calc-add-btn'])
 const sub = operatorCreator(...[function(x, y) {return x - y}, '-', '#calc-sub-btn'])
-const mult = operatorCreator(...[function(x, y) {return x * y}, '*', '#calc-mult-btn'])
-const div = operatorCreator(...[function(x, y) {return y === 0 ? 'hacker alert!' : (x / y)}, '/', '#calc-div-btn'])
-add.btn.addEventListener('click', (e) => validateOperatorClick(e, add))
-sub.btn.addEventListener('click', (e) => validateOperatorClick(e, sub))
-mult.btn.addEventListener('click', (e) => validateOperatorClick(e, mult))
-div.btn.addEventListener('click', (e) => validateOperatorClick(e, div))
+const mult = operatorCreator(...[function(x, y) {return x * y}, 'x', '#calc-mult-btn'])
+const div = operatorCreator(...[function(x, y) {return y === 0 ? NaN : (x / y)}, '÷', '#calc-div-btn'])
+const exp = operatorCreator(...[function(x, y) {return x ** y}, '^', undefined])
+
+add.btn.addEventListener('click', main)
+sub.btn.addEventListener('click', main)
+mult.btn.addEventListener('click', main)
+div.btn.addEventListener('click', main)
 
 // global variables
 let operandOne = ''
 let operator = undefined
 let unconfirmedOperand = ''
 let result = ''
+let keylock = false
 
 // test for reducing fontsize for long inputs/outputs
 // const outputAreaWidth = Number(window.getComputedStyle(document.querySelector('#calc-output')).width.slice(0, -2))
 
-
 function operate() {
-    // Evaluates then formats the result of the current expression.
-
-    let value = operator.expression(Number(operandOne), Number(unconfirmedOperand))
-
-    return value.toString()
+    // Evaluates the current expression.
+    
+    if (operandOne && operator && unconfirmedOperand && !keylock) {
+        let value = operator.expression(Number(operandOne), Number(unconfirmedOperand))
+        if (isNaN(value)) {
+            keylock = true
+            value = 'hacker alert!'
+        }
+        return value.toString()
+    }
 }
 
-function validateOperandClick(e) {
-    // Validates the user key selection then updates unconfirmedOperand.
 
-    let canUpdate = true
-    const key = e.target.textContent
+function isValidOperand() {
+    // Returns true if unconfirmedOperand is a valid number.
 
-    if (key === '.' && unconfirmedOperand.indexOf(key) !== -1) {
-        canUpdate = false
+    if (unconfirmedOperand) {
+        return !isNaN(Number(unconfirmedOperand))
     }
+}
 
-    if (canUpdate) { 
+
+function validateKeySelection(key) {
+    // Validates the user's key selection then updates the expression.
+
+    // determines if user input is an operator symbol
+    const operatorObj = [add, sub, mult, div].filter(oper => oper.symbol === key)[0]
+
+    // handles expression updates related to the expression's operator
+    if (operatorObj) {
+        updateOperator(operatorObj)
+    // handles expression updates related to an operand
+    } else {
+        // pre-update validation checks
+        let canUpdate = true
+
+        // restricts total length of expression
+        if (`${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+        .length > 10 && !operatorObj) {
+            canUpdate = false
+        }
+        
+        // prevents the backspace character from being added to the operand
         if (key === '←') {
-            unconfirmedOperand = unconfirmedOperand.substring(0, unconfirmedOperand.length - 1)
-        } else {
+            unconfirmedOperand = unconfirmedOperand.slice(0, -1)
+            canUpdate = false
+        }
+
+        // prevents a second decimal point from being added to an operand
+        if (key === '.' && unconfirmedOperand.indexOf(key) !== -1) {
+            canUpdate = false
+        }
+
+        if (canUpdate) { 
             unconfirmedOperand += key
         }
     }
-    
-    // display result if expression is complete
-    if (operandOne && operator && unconfirmedOperand) {
-        result = operate()
-    }
-    
-    updateDisplay()
-    
 }
-   
-function validateOperatorClick(e, operatorObj) {
-    // Validates the user key selection, sets the operator for the current expression. If expression is complete, calls for evaluation.
-    
-    canUpdate = true
-    
-    // deactivates the operator buttons if there is no confirmed operand (i.e. handles the initial state)
-    if (!unconfirmedOperand && !operandOne) {        
-        canUpdate = false
+
+
+function updateOperator(operatorObj) {
+    // Updates expression operator or positive/negative value of an operand.
+
+    // initially sets operandOne as a negative value
+    if (!operandOne && !unconfirmedOperand && operatorObj.symbol === '-') {
+        unconfirmedOperand = operatorObj.symbol
+    // initially sets operandOne as a positive value
+    } else if (!operandOne && unconfirmedOperand === '-' && operatorObj.symbol === '-') {
+        unconfirmedOperand = ''
     }
 
-    if (canUpdate) {
-        // sets the operator and operandOne (i.e. handles the initial state)
-        if (!operator) {
-            operator = operatorObj
-            operandOne = unconfirmedOperand
-            unconfirmedOperand = ''
-            result = ''        
+    // initially sets operator
+    if (!operator && isValidOperand()) {
+        operandOne = unconfirmedOperand
+        operator = operatorObj
+        unconfirmedOperand = ''
+    
+    // updates operator before inputting a valid second operand
+    } else if (operandOne && !isValidOperand()) {
+        // simplifies expression by removing redundant operation symbols (e.g. 3 + -4 is the same as 3 - 4)
+        if (operator === sub && (operatorObj === sub || operatorObj == add)) {
+            operator = add
+        // sets the second operand as negative
+        } else if ((operator === mult || operator === div) && operatorObj === sub) {
+            unconfirmedOperand = operatorObj.symbol
+        // sets the operator as exponent
+        } else if (operator === mult && operatorObj === mult) {
+            operator = exp
         } else {
-            // updates the operator before a second operand is provided
-            if (!unconfirmedOperand) {
-                operator = operatorObj
-            // calls for evaluation of the current expression and sets variables for the next expression (i.e. treats the operator as '=')
-            } else {
-                result = operate()
-                unconfirmedOperand = ''
-                operandOne = result
-                operator = operatorObj
-            }
+            operator = operatorObj
         }
-        updateDisplay()
-    }
-    
-
-}
-
-function validateEqlClick(e) {
-    // Validates the current expression is complete then evaluates it.
-    
-    if (operandOne && operator && unconfirmedOperand) {
-        result = operate()
-        updateDisplay()
+        
+    // updates the expression if an operator is entered as an expression evaluator
+    } else if (operandOne && operator && isValidOperand()) {
+        unconfirmedOperand = ''
+        operandOne = result
+        operator = operatorObj   
     }
 }
 
-function validateClearClick(e) {
-    // Clears displayValue or "pops" confirmed values from the current expression.
-    
-    // if (unconfirmedOperand) {
-    //     unconfirmedOperand = ''
-    //     operandTwo = ''
-    // } else if (result) {
-    //     result = ''
-    //     operandTwo = ''
-    //     operator = undefined
-    //     operandOne = ''
-    // } else if (operator) {
-    //     operator = undefined
-    // } else if (operandOne) {
-    //     operandOne = ''
+
+function clearDisplay(e) {
+    // Clears all expression elements, any result & resets keylock.
+
+    // if (clearBtnClicked) {
+    //     clearLastExpressionElement()    
+    // } else {
+        // console.log('longpress')
+        operandOne = ''
+        operator = undefined
+        unconfirmedOperand = ''
+        result = '' 
     // }
-    // updateDisplay()
-
-    unconfirmedOperand = ''
-    operator = undefined
-    operandOne = ''
-    result = ''
-
+    keylock = false
     updateDisplay()
-
-
 }
+
+
+function clearLastExpressionElement(e) {
+    // Removes last element from the curent expression.
+    
+    if (result || unconfirmedOperand) {
+        result = ''
+        unconfirmedOperand = ''
+    } else {
+        operator = undefined
+        unconfirmedOperand = operandOne
+        operandOne = ''
+    }
+    keylock = false
+    updateDisplay()
+}
+
 
 function updateDisplay() {
     // Updates the display panel of the calculator.    
 
+    // // test for updating the expression & result fontsize based on character length
     // const defaultresultFontSize = Number(window.getComputedStyle(exprDisplay).fontSize.slice(0, -2))
 
     // // reduces the font size of result to fit into a fixed sized output area
@@ -158,9 +207,65 @@ function updateDisplay() {
     //     exprDisplay.style.fontSize = --reducedFontSize + 'px'
     // }
   
+    let roundedResult
+    let formattedResult
+
+    // rounds long floating point numbers & provides alternate text for results of long length
+    if (result) {
+        roundedResult = result.indexOf('.') === -1 ? result : Math.round(Number(result) * 1000) / 1000
+        formattedResult = roundedResult.toString().length > 11 ? 'a LONG number!' : roundedResult        
+    }
+
     exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
-    evalDisplay.textContent = result
+    evalDisplay.textContent = formattedResult || null
 
     // exprDisplay.style.fontSize = defaultresultFontSize + 'px'
+}
 
+
+function validateKeyBoardInput(e) {
+    // Clears the calc display or returns the value of select keys.
+    
+    let key
+
+    if (e.key === 'Delete') {
+        clearDisplay()
+        key = undefined
+    } else if (key === 'Enter') {
+        operate()
+        key = undefined
+    } else if (e.key === 'Backspace') {
+        key = '←'
+    } else if (e.key === '*') {
+        key = 'x'
+    } else if (e.key === '/') {
+        key = '÷'
+    } else if ('1234567890.+-'.indexOf(e.key) !== -1) {
+        key = e.key
+    } else {
+        key = undefined
+    }
+    return key
+}
+
+
+function main(e) {
+    // Validates user input then updates the expression and calculator display.
+
+    // normalizes keyboard or mouse input
+    let key
+    if (e.type === 'keydown') {
+        key = validateKeyBoardInput(e)
+    } else {
+        key = e.target.textContent
+    }
+
+    if (!keylock && key) {
+        validateKeySelection(key)
+        // evaluates expression if second operand is a valid number
+        if (isValidOperand()) {
+            result = operate()
+        }
+        updateDisplay()
+    }
 }

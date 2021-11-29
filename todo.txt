@@ -1,7 +1,33 @@
-*fix "divide by zero" bug so that the message doesn't cause NaN to appear
-*fix long input/output display length issue
-*add a button to toggle positive/negative number input
-*add keyboard support
 *reduce length of output for repeating decimals
-*add functionality for clear so that it remove the last part of the expression when possible
+*add functionality for clear so that it removes the last part of the expression when possible
 *add 'clickable button' css styling to all buttons
+*disable Firefox quickfind shortcut - activated by  '//' on keyboard
+*inputting an exp expression followed by another exp expression displays an expr with a mult oper symbol instead of an exp oper symbol
+*move backspace out of validateOperandCheck and into a separate check
+
+- 2 5 - give result -25
+result comes before valid second operand
+
+- 2 5 gives expr 25-
+
+2 + 3 + sets operandOne as two
+
+1 4 - - give hacker alert
+
+5 * . give hacker alert
+
+-*/**-+-*/*-+-*/ can be input from initial state
+
+.******* can be input from initial state
+
+5*. 'back' displays back arrow in expression
+
+dividing by zero doesn't give an error
+
+a rounded result doesn't round when converted to operandOne for the next expression
+
+work on point 2 from TOP requirements
+
+
+
+
