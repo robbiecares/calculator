@@ -1,6 +1,7 @@
 // buttons & divs
 const operands = document.querySelectorAll('.operand')
 const eqlbtn = document.querySelector('#calc-eql-btn')
+const calcOutput = document.querySelector('#calc-output')
 const exprDisplay = document.querySelector('#calc-output-expr')
 const evalDisplay = document.querySelector('#calc-output-eval')
 const clearBtn = document.querySelector('#calc-clear')
@@ -9,25 +10,10 @@ const oneKey = document.querySelector('#one-key')
 
 // event listeners
 operands.forEach(operand => operand.addEventListener('click', main))
-
 window.addEventListener('keydown', main)
-
 eqlbtn.addEventListener('click', operate)
 backBtn.addEventListener('click', main)
 clearBtn.addEventListener('click', clearDisplay)
-
-// experminentation for clearall vs clear last functionality
-
-// let clearBtnClicked = false
-
-// clearBtn.addEventListener('mousedown', () => {
-//     clearBtnClicked = false
-//     clearDisplay()
-// })
-
-// clearBtn.addEventListener('click', () => {
-//     clearBtnClicked = true
-// })
 
 // operator objects & btns
 function operatorCreator(expression, symbol, cssId) {
@@ -55,10 +41,8 @@ let operandOne = ''
 let operator = undefined
 let unconfirmedOperand = ''
 let result = ''
-let keylock = false
-
-// test for reducing fontsize for long inputs/outputs
-// const outputAreaWidth = Number(window.getComputedStyle(document.querySelector('#calc-output')).width.slice(0, -2))
+let keylock = false;
+let maxWidth = calcOutput.clientWidth
 
 function operate() {
     // Evaluates the current expression.
@@ -68,7 +52,8 @@ function operate() {
         if (isNaN(value)) {
             keylock = true
             value = 'hacker alert!'
-        }
+        } else if (value === Infinity)
+            keylock = true
         return value.toString()
     }
 }
@@ -97,11 +82,11 @@ function validateKeySelection(key) {
         // pre-update validation checks
         let canUpdate = true
 
-        // restricts total length of expression
-        if (`${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
-        .length > 10 && !operatorObj) {
-            canUpdate = false
-        }
+        // // restricts total length of expression
+        // if (`${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+        // .length > 10 && !operatorObj) {
+        //     canUpdate = false
+        // }
         
         // prevents the backspace character from being added to the operand
         if (key === '←') {
@@ -195,31 +180,42 @@ function clearLastExpressionElement(e) {
 }
 
 
+function getFontSize(element) {
+    return Number(window.getComputedStyle(element).fontSize.slice(0, -2))
+}
+
+
+function adjustOutputFontSize(element) {
+    // Updates font size of output elements based upon its length.
+    
+    const defaultSize = 48
+    
+    if (getFontSize(element) > defaultSize) {
+        element.style.fontSize = defaultSize + 'px'
+    } else if (element.scrollWidth > maxWidth) {
+        while (element.scrollWidth > maxWidth) {
+            element.style.fontSize = (getFontSize(element) - 1) + 'px'
+            exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+            evalDisplay.textContent = result || null
+        }
+    } else if (element.scrollWidth < maxWidth) {
+        while (element.scrollWidth < maxWidth && getFontSize(element) < defaultSize) {
+            element.style.fontSize = (getFontSize(element) + 1) + 'px'
+            exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+            evalDisplay.textContent = result || null
+        }
+    }
+}
+
+
 function updateDisplay() {
     // Updates the display panel of the calculator.    
 
-    // // test for updating the expression & result fontsize based on character length
-    // const defaultresultFontSize = Number(window.getComputedStyle(exprDisplay).fontSize.slice(0, -2))
-
-    // // reduces the font size of result to fit into a fixed sized output area
-    // let reducedFontSize = defaultresultFontSize
-    // while (exprDisplay.scrollWidth > outputAreaWidth) {
-    //     exprDisplay.style.fontSize = --reducedFontSize + 'px'
-    // }
-  
-    let roundedResult
-    let formattedResult
-
-    // rounds long floating point numbers & provides alternate text for results of long length
-    if (result) {
-        roundedResult = result.indexOf('.') === -1 ? result : Math.round(Number(result) * 1000) / 1000
-        formattedResult = roundedResult.toString().length > 11 ? 'a LONG number!' : roundedResult        
-    }
-
     exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
-    evalDisplay.textContent = formattedResult || null
+    evalDisplay.textContent = result || null
 
-    // exprDisplay.style.fontSize = defaultresultFontSize + 'px'
+    adjustOutputFontSize(exprDisplay)
+    adjustOutputFontSize(evalDisplay)
 }
 
 

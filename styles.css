@@ -28,7 +28,9 @@ body {
 
 #calc-body {
     background-color: orange;
-    border: 3px solid black;
+    border: 15px outset orange;
+    outline: 1px solid black;
+    outline-offset: -15px;
     border-radius: 25px;
     display: flex;
     justify-content: center;
@@ -41,16 +43,26 @@ body {
 }
 
 #calc-output {
+    display: flex;
+    flex-flow: column;
+    justify-content:space-between;
+    align-items: flex-end;
     background-color: lightblue;
-    border: 3px solid black;
-    border-radius: 5px;
+    border: 3px inset black;
+    border-radius: 10px;
     font-size: 48px;
+    font-family: monospace;
     text-align:right;
     height: 128px;
 }
 
+#calc-output-expr {
+    /* border: 1px solid red; */
+}
+
 #calc-output-eval {
     font-weight: normal;
+    /* border: 1px solid green; */
 }
 
 .calc-input-row {
@@ -59,14 +71,46 @@ body {
     gap: 15px;
 }
 
-.calc-input-row > button {
-    font-size: 48px;
-    width: 100px;
-    border: 3px solid black;
+.calc-input-row > #brand {
+    color: blueviolet;
+    text-shadow: 1px 1px grey;
+    border: 3px inset blueviolet;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 28px;
+    align-self: flex-start;
+    flex: 2;
+}   
+
+.super {
+    vertical-align: super;
+    font-size: 18px;
 }
 
-.operator {
+button {
+    font-size: 48px;
+    width: 100px;
+    background-color: lightgrey;
+    outline: 2px solid black;
+    border-radius: 15%;
+}
+
+button.operator {
     background-color: lightcoral;
+}
+
+button.hidden {
+    background-color: unset;
+    border: none;
+    outline: none;
+}
+
+button.hidden:active {
+    border: unset;
+}
+
+button:active {
+    border: 1px solid black;
 }
 
 footer {
