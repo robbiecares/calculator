@@ -1,9 +1,8 @@
-*reduce length of output for repeating decimals
 *add functionality for clear so that it removes the last part of the expression when possible
-*add 'clickable button' css styling to all buttons
 *disable Firefox quickfind shortcut - activated by  '//' on keyboard
-*inputting an exp expression followed by another exp expression displays an expr with a mult oper symbol instead of an exp oper symbol
 *move backspace out of validateOperandCheck and into a separate check
+*display fontsize updates can cause calc to "shake" on screen (repeated entry of x ** 2)
+
 
 - 2 5 - give result -25
 result comes before valid second operand
@@ -22,11 +21,7 @@ result comes before valid second operand
 
 5*. 'back' displays back arrow in expression
 
-dividing by zero doesn't give an error
 
-a rounded result doesn't round when converted to operandOne for the next expression
-
-work on point 2 from TOP requirements
 
 
 
