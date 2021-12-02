@@ -1,0 +1,27 @@
+*add functionality for clear so that it removes the last part of the expression when possible
+*disable Firefox quickfind shortcut - activated by  '//' on keyboard
+*move backspace out of validateOperandCheck and into a separate check
+
+
+- 2 5 - give result -25
+result comes before valid second operand
+
+- 2 5 gives expr 25-
+
+2 + 3 + sets operandOne as two
+
+1 4 - - give hacker alert
+
+5 * . give hacker alert
+
+-*/**-+-*/*-+-*/ can be input from initial state
+
+.******* can be input from initial state
+
+5*. 'back' displays back arrow in expression
+
+
+
+
+
+
