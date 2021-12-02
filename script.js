@@ -11,7 +11,7 @@ const oneKey = document.querySelector('#one-key')
 // event listeners
 operands.forEach(operand => operand.addEventListener('click', main))
 window.addEventListener('keydown', main)
-eqlbtn.addEventListener('click', operate)
+eqlbtn.addEventListener('click', main)
 backBtn.addEventListener('click', main)
 clearBtn.addEventListener('click', clearDisplay)
 
@@ -43,6 +43,7 @@ let unconfirmedOperand = ''
 let result = ''
 let keylock = false;
 let maxWidth = calcOutput.clientWidth
+
 
 function operate() {
     // Evaluates the current expression.
@@ -81,12 +82,6 @@ function validateKeySelection(key) {
     } else {
         // pre-update validation checks
         let canUpdate = true
-
-        // // restricts total length of expression
-        // if (`${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
-        // .length > 10 && !operatorObj) {
-        //     canUpdate = false
-        // }
         
         // prevents the backspace character from being added to the operand
         if (key === '←') {
@@ -96,6 +91,11 @@ function validateKeySelection(key) {
 
         // prevents a second decimal point from being added to an operand
         if (key === '.' && unconfirmedOperand.indexOf(key) !== -1) {
+            canUpdate = false
+        }
+
+        // prevents '=' from being added to the operand
+        if (key === '=') {
             canUpdate = false
         }
 
@@ -140,9 +140,13 @@ function updateOperator(operatorObj) {
         
     // updates the expression if an operator is entered as an expression evaluator
     } else if (operandOne && operator && isValidOperand()) {
-        unconfirmedOperand = ''
         operandOne = result
+        unconfirmedOperand = ''
         operator = operatorObj   
+        
+        if (operator.symbol === '÷') {
+            result = ''            
+        }
     }
 }
 
@@ -185,23 +189,23 @@ function getFontSize(element) {
 }
 
 
-function adjustOutputFontSize(element) {
+function adjustOutputFontSize(element, expression) {
     // Updates font size of output elements based upon its length.
     
     const defaultSize = 48
     
     if (getFontSize(element) > defaultSize) {
         element.style.fontSize = defaultSize + 'px'
-    } else if (element.scrollWidth > maxWidth) {
-        while (element.scrollWidth > maxWidth) {
+    } else if (element.scrollWidth >= maxWidth) {
+        while (element.scrollWidth >= maxWidth) {
             element.style.fontSize = (getFontSize(element) - 1) + 'px'
-            exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+            exprDisplay.textContent = expression
             evalDisplay.textContent = result || null
         }
     } else if (element.scrollWidth < maxWidth) {
-        while (element.scrollWidth < maxWidth && getFontSize(element) < defaultSize) {
+        while (element.scrollWidth < (maxWidth - 30) && getFontSize(element) < defaultSize) {
             element.style.fontSize = (getFontSize(element) + 1) + 'px'
-            exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+            exprDisplay.textContent = expression
             evalDisplay.textContent = result || null
         }
     }
@@ -211,11 +215,13 @@ function adjustOutputFontSize(element) {
 function updateDisplay() {
     // Updates the display panel of the calculator.    
 
-    exprDisplay.textContent = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+    let expression = `${operandOne || unconfirmedOperand}${operator ? operator.symbol : ''}${operandOne ? unconfirmedOperand : ''}`
+
+    exprDisplay.textContent = expression
     evalDisplay.textContent = result || null
 
-    adjustOutputFontSize(exprDisplay)
-    adjustOutputFontSize(evalDisplay)
+    adjustOutputFontSize(exprDisplay, expression)
+    adjustOutputFontSize(evalDisplay, expression)
 }
 
 
@@ -228,8 +234,7 @@ function validateKeyBoardInput(e) {
         clearDisplay()
         key = undefined
     } else if (key === 'Enter') {
-        operate()
-        key = undefined
+        key = '='
     } else if (e.key === 'Backspace') {
         key = '←'
     } else if (e.key === '*') {
@@ -258,10 +263,17 @@ function main(e) {
 
     if (!keylock && key) {
         validateKeySelection(key)
-        // evaluates expression if second operand is a valid number
-        if (isValidOperand()) {
-            result = operate()
-        }
-        updateDisplay()
+        
+        // evaluates expression if second operand is a valid number & the operation will not cause an error
+        if (operandOne) {
+            if (operator.symbol !== '÷' && isValidOperand()) {
+                result = operate()
+            } else if (key === '=')
+                result = operate()
+            }
     }
+        updateDisplay()
+    
+
+    
 }

@@ -1,7 +1,6 @@
 *add functionality for clear so that it removes the last part of the expression when possible
 *disable Firefox quickfind shortcut - activated by  '//' on keyboard
 *move backspace out of validateOperandCheck and into a separate check
-*display fontsize updates can cause calc to "shake" on screen (repeated entry of x ** 2)
 
 
 - 2 5 - give result -25
