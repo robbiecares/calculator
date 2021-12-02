@@ -3,6 +3,8 @@
     margin: 0;
     padding: 0;
     font-weight: bolder;
+    font-family: monospace;
+
 
 }
 
@@ -37,7 +39,7 @@ body {
     align-items: stretch;
     flex-flow: column;
     gap: 15px;
-    margin: 100px 1175px 0 225px;
+    margin: 100px 700px;
     padding: 20px;
 
 }
@@ -51,7 +53,6 @@ body {
     border: 3px inset black;
     border-radius: 10px;
     font-size: 48px;
-    font-family: monospace;
     text-align:right;
     height: 128px;
 }
@@ -74,10 +75,11 @@ body {
 .calc-input-row > #brand {
     color: blueviolet;
     text-shadow: 1px 1px grey;
-    border: 3px inset blueviolet;
+    border: 3px solid blueviolet;
     border-radius: 25px;
-    padding: 10px 20px;
-    font-size: 28px;
+    padding: 10px;
+    margin: 0 25px;
+    font-size: 24px;
     align-self: flex-start;
     flex: 2;
 }   
