@@ -13,7 +13,7 @@ operands.forEach(operand => operand.addEventListener('click', main))
 window.addEventListener('keydown', main)
 eqlbtn.addEventListener('click', main)
 backBtn.addEventListener('click', main)
-clearBtn.addEventListener('click', clearDisplay)
+clearBtn.addEventListener('click', clearLastExpressionElement)
 
 // operator objects & btns
 function operatorCreator(expression, symbol, cssId) {
@@ -80,28 +80,40 @@ function validateKeySelection(key) {
         updateOperator(operatorObj)
     // handles expression updates related to an operand
     } else {
-        // pre-update validation checks
-        let canUpdate = true
-        
-        // prevents the backspace character from being added to the operand
-        if (key === '←') {
-            unconfirmedOperand = unconfirmedOperand.slice(0, -1)
-            canUpdate = false
-        }
+        updateOperand(key)
+    }
+}
 
-        // prevents a second decimal point from being added to an operand
-        if (key === '.' && unconfirmedOperand.indexOf(key) !== -1) {
-            canUpdate = false
-        }
 
-        // prevents '=' from being added to the operand
-        if (key === '=') {
-            canUpdate = false
-        }
+function updateOperand(key) {
+    // Validates the users key selection when updating the current operand
 
-        if (canUpdate) { 
-            unconfirmedOperand += key
-        }
+    // pre-update validation checks
+    let canUpdate = true
+    
+    // prevents the backspace character from being added to the operand
+    if (key === '←') {
+        unconfirmedOperand = unconfirmedOperand.slice(0, -1)
+        canUpdate = false
+    }
+
+    // prevents a second decimal point from being added to an operand
+    if (key === '.' && unconfirmedOperand.indexOf(key) !== -1) {
+        canUpdate = false
+    }
+
+    // prevents '=' from being added to the operand
+    if (key === '=') {
+        canUpdate = false
+    }
+
+    // prevents leading zeros in the operand
+    if (key === '0' && (!unconfirmedOperand || unconfirmedOperand.startsWith('-'))) {
+        canUpdate = false
+    }
+
+    if (canUpdate) { 
+        unconfirmedOperand += key
     }
 }
 
@@ -154,15 +166,10 @@ function updateOperator(operatorObj) {
 function clearDisplay(e) {
     // Clears all expression elements, any result & resets keylock.
 
-    // if (clearBtnClicked) {
-    //     clearLastExpressionElement()    
-    // } else {
-        // console.log('longpress')
-        operandOne = ''
-        operator = undefined
-        unconfirmedOperand = ''
-        result = '' 
-    // }
+    operandOne = ''
+    operator = undefined
+    unconfirmedOperand = ''
+    result = '' 
     keylock = false
     updateDisplay()
 }
@@ -197,7 +204,7 @@ function adjustOutputFontSize(element, expression) {
     if (getFontSize(element) > defaultSize) {
         element.style.fontSize = defaultSize + 'px'
     } else if (element.scrollWidth >= maxWidth) {
-        while (element.scrollWidth >= maxWidth) {
+        while (element.scrollWidth >= maxWidth - 30) {
             element.style.fontSize = (getFontSize(element) - 1) + 'px'
             exprDisplay.textContent = expression
             evalDisplay.textContent = result || null
@@ -225,7 +232,7 @@ function updateDisplay() {
 }
 
 
-function validateKeyBoardInput(e) {
+function validateKeyboardInput(e) {
     // Clears the calc display or returns the value of select keys.
     
     let key
@@ -233,13 +240,14 @@ function validateKeyBoardInput(e) {
     if (e.key === 'Delete') {
         clearDisplay()
         key = undefined
-    } else if (key === 'Enter') {
+    } else if (e.key === 'Enter') {
         key = '='
     } else if (e.key === 'Backspace') {
         key = '←'
     } else if (e.key === '*') {
         key = 'x'
     } else if (e.key === '/') {
+        e.preventDefault()
         key = '÷'
     } else if ('1234567890.+-'.indexOf(e.key) !== -1) {
         key = e.key
@@ -256,7 +264,7 @@ function main(e) {
     // normalizes keyboard or mouse input
     let key
     if (e.type === 'keydown') {
-        key = validateKeyBoardInput(e)
+        key = validateKeyboardInput(e)
     } else {
         key = e.target.textContent
     }

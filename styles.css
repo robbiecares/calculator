@@ -47,14 +47,22 @@ body {
 #calc-output {
     display: flex;
     flex-flow: column;
-    justify-content:space-between;
-    align-items: flex-end;
+    /* justify-content:space-between; */
+    /* align-items: flex-end; */
     background-color: lightblue;
     border: 3px inset black;
     border-radius: 10px;
     font-size: 48px;
     text-align:right;
     height: 128px;
+}
+
+#calc-output > *{
+    /* border: 1px solid blue; */
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex: 1
 }
 
 #calc-output-expr {
@@ -64,6 +72,7 @@ body {
 #calc-output-eval {
     font-weight: normal;
     /* border: 1px solid green; */
+    ;
 }
 
 .calc-input-row {
