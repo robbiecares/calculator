@@ -124,15 +124,8 @@ a {
         margin: .5em;
     }
 
-    .calc-input-row {
-        display: flex;
-        justify-content: space-between;
-        /* padding: 0; */
-    }
-
     button {
         font-size: 3em;
-        /* padding: 1% 5%; */
         background-color: lightgrey;
         outline: .025em solid black;
         border-radius: .25em;

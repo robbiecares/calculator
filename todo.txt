@@ -1,6 +1,5 @@
 // bugs & features ideas
-*move backspace out of validateOperandCheck and into a separate check
-
+*get monospace operational for mobile
 
 // test cases
 - 2 5 - give result -25
