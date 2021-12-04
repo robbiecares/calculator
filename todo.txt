@@ -1,8 +1,6 @@
 // bugs & features ideas
-*add 'longpress' functionality to clear to call 'clearall'
 *move backspace out of validateOperandCheck and into a separate check
-*calc still "shakes" when font size of long operands is updated
-*32 '9' entries adds a small grey bar to bottom of page
+
 
 // test cases
 - 2 5 - give result -25

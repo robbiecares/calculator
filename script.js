@@ -13,7 +13,9 @@ operands.forEach(operand => operand.addEventListener('click', main))
 window.addEventListener('keydown', main)
 eqlbtn.addEventListener('click', main)
 backBtn.addEventListener('click', main)
-clearBtn.addEventListener('click', clearLastExpressionElement)
+clearBtn.addEventListener('mousedown', clearDisplay)
+clearBtn.addEventListener('mousedown', () => {mouseDown = true});
+clearBtn.addEventListener('mouseup', () => {mouseDown = false});
 
 // operator objects & btns
 function operatorCreator(expression, symbol, cssId) {
@@ -42,7 +44,8 @@ let operator = undefined
 let unconfirmedOperand = ''
 let result = ''
 let keylock = false;
-let maxWidth = calcOutput.clientWidth
+const defaultMaxWidth = calcOutput.clientWidth
+let mouseDown = false
 
 
 function operate() {
@@ -163,15 +166,24 @@ function updateOperator(operatorObj) {
 }
 
 
-function clearDisplay(e) {
-    // Clears all expression elements, any result & resets keylock.
-
-    operandOne = ''
-    operator = undefined
-    unconfirmedOperand = ''
-    result = '' 
-    keylock = false
-    updateDisplay()
+function clearDisplay() {
+    // Removes last or all elements from expression based on length of time mouse button is held down.
+    
+    setTimeout(() => {
+        // clear all expression elements if mouse button is held down
+        if (mouseDown) {
+            operandOne = ''
+            operator = undefined
+            unconfirmedOperand = ''
+            result = '' 
+        // clear last expression element for normal mouse click
+        } else {
+            clearLastExpressionElement()
+        }
+        keylock = false
+        updateDisplay()
+    }
+    , 150)
 }
 
 
@@ -196,24 +208,27 @@ function getFontSize(element) {
 }
 
 
-function adjustOutputFontSize(element, expression) {
-    // Updates font size of output elements based upon its length.
+function adjustOutputFontSize(element, text) {
+    // Updates font size of text based upon scroll width of element.
     
-    const defaultSize = 48
-    
-    if (getFontSize(element) > defaultSize) {
-        element.style.fontSize = defaultSize + 'px'
-    } else if (element.scrollWidth >= maxWidth) {
-        while (element.scrollWidth >= maxWidth - 30) {
-            element.style.fontSize = (getFontSize(element) - 1) + 'px'
-            exprDisplay.textContent = expression
-            evalDisplay.textContent = result || null
+    const defaultFontSize = 48
+
+    // reduces font size while text is longer than calcOutput div
+    if (element.scrollWidth >= defaultMaxWidth) {
+        while (element.scrollWidth >= defaultMaxWidth) {
+            element.style.fontSize = (getFontSize(element) - .5) + 'px'
+            element.textContent = text
         }
-    } else if (element.scrollWidth < maxWidth) {
-        while (element.scrollWidth < (maxWidth - 30) && getFontSize(element) < defaultSize) {
-            element.style.fontSize = (getFontSize(element) + 1) + 'px'
-            exprDisplay.textContent = expression
-            evalDisplay.textContent = result || null
+    } else {
+        // increases font size while text is longer than calcOutput div
+        while (element.scrollWidth < defaultMaxWidth && getFontSize(element) < defaultFontSize) {
+            element.style.fontSize = (getFontSize(element) + .5) + 'px'
+            element.textContent = text
+            // reduces font size by one "step" if text exceeds the length of calcOutput div
+            if (element.scrollWidth >= defaultMaxWidth) {
+                element.style.fontSize = (getFontSize(element) - .5) + 'px'
+                break
+            }    
         }
     }
 }
@@ -227,8 +242,10 @@ function updateDisplay() {
     exprDisplay.textContent = expression
     evalDisplay.textContent = result || null
 
-    adjustOutputFontSize(exprDisplay, expression)
-    adjustOutputFontSize(evalDisplay, expression)
+    adjustOutputFontSize(exprDisplay, exprDisplay.textContent)
+    if (result) {
+        adjustOutputFontSize(evalDisplay, evalDisplay.textContent)
+    }
 }
 
 
@@ -280,8 +297,5 @@ function main(e) {
                 result = operate()
             }
     }
-        updateDisplay()
-    
-
-    
+        updateDisplay()  
 }
